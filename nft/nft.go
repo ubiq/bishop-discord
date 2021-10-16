@@ -1,8 +1,11 @@
 package nft
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"log"
 	"math/big"
+	"strings"
 
 	n "github.com/ubiq/bishop-discord/contracts"
 	"github.com/ubiq/go-ubiq/v5/common"
@@ -13,6 +16,12 @@ type NFT struct {
 	Owner      common.Address
 	Attributes map[string]string
 	Picture    string
+}
+
+type NceptionURI struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Image       string `json:"image"`
 }
 
 func HandleNception(RpcURL string, TokenID *big.Int) NFT {
@@ -43,6 +52,30 @@ func HandleNception(RpcURL string, TokenID *big.Int) NFT {
 	}
 	log.Println("ownerOf:", ownerOf)
 	nft.Owner = ownerOf
+	// Attributes
+
+	// Picture
+	tokenURIbase64, err := instance.TokenURI(nil, TokenID)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("tokenURI:", tokenURIbase64)
+	nCeptionURI := decodeNceptionTokenURIbase64(tokenURIbase64)
+	// nft.Picture needs to be in a format which can be displayed by Discord
+	nft.Picture = nCeptionURI.Image
 
 	return nft
+}
+
+func decodeNceptionTokenURIbase64(tokenURIbase64 string) NceptionURI {
+	// TODO: Return attributes as well
+	tokenURI, _ := base64.StdEncoding.DecodeString(strings.TrimPrefix(tokenURIbase64, "data:application/json;base64,"))
+
+	token := NceptionURI{}
+	json.Unmarshal(tokenURI, &token)
+
+	tokenImage, _ := base64.StdEncoding.DecodeString(strings.TrimPrefix(token.Image, "data:image/svg+xml;base64,"))
+	token.Image = string(tokenImage)
+
+	return token
 }
