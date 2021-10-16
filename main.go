@@ -55,12 +55,17 @@ var (
 		"nception": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			// NFT handling
 			tokenID := big.NewInt(i.ApplicationCommandData().Options[0].IntValue())
-			// TODO:
-			// Handle tokenID outside of bounds
-			nft := nft.HandleNception(*RpcURL, tokenID)
-			msgformat := fmt.Sprintf("nCeption NFT\nToken ID: %d\nOwner: %s\n", tokenID, nft.Owner)
-			if nft.Owner.Hex() == "0x0000000000000000000000000000000000000000" {
-				msgformat = fmt.Sprintf("nCeption NFT\nToken ID: %d\nUnclaimed\n", tokenID)
+			var nCeptionNft nft.NFT
+			var msgformat string
+
+			if tokenID.Cmp(big.NewInt(1)) == -1 || tokenID.Cmp(big.NewInt(8888)) == 1 {
+				msgformat = fmt.Sprintf("nCeption NFT\nInvalid Token ID: %d\n", tokenID)
+			} else {
+				nCeptionNft = nft.HandleNception(*RpcURL, tokenID)
+				msgformat = fmt.Sprintf("nCeption NFT\nToken ID: %d\nOwner: %s\n", tokenID, nCeptionNft.Owner)
+				if nCeptionNft.Owner.Hex() == "0x0000000000000000000000000000000000000000" {
+					msgformat = fmt.Sprintf("nCeption NFT\nToken ID: %d\nUnclaimed\n", tokenID)
+				}
 			}
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				// Ignore type for now, we'll discuss them in "responses" part
