@@ -4,16 +4,19 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/big"
 	"os"
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/ubiq/bishop-discord/nft"
 )
 
 // Bot parameters
 var (
 	GuildID  = flag.String("guild", "", "Test guild ID. If not passed - bot registers commands globally")
 	BotToken = flag.String("token", "", "Bot access token")
+	RpcURL   = flag.String("rpcURL", "http://127.0.0.1:8588", "RPC URL")
 )
 
 var s *discordgo.Session
@@ -50,27 +53,19 @@ var (
 	}
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		"nception": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			margs := []interface{}{
-				// Here we need to convert raw interface{} value to wanted type.
-				// Also, as you can see, here is used utility functions to convert the value
-				// to particular type. Yeah, you can use just switch type,
-				// but this is much simpler
-				i.ApplicationCommandData().Options[0].IntValue(),
-			}
-
 			// NFT handling
-
+			//var nft nft.NFT
+			tokenID := big.NewInt(i.ApplicationCommandData().Options[0].IntValue())
+			nft := nft.HandleNception(*RpcURL, tokenID)
 			msgformat :=
-				` nCeption NFT:
-				> Token ID: %d
-`
+				" nCeption NFT\n > Token ID: %d\n > Owner: %s\n"
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				// Ignore type for now, we'll discuss them in "responses" part
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: fmt.Sprintf(
 						msgformat,
-						margs...,
+						tokenID, nft.Owner,
 					),
 				},
 			})
