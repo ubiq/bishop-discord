@@ -34,7 +34,12 @@ func HandleNception(RpcURL string, TokenID *big.Int) NFT {
 	var nft NFT
 	ownerOf, err := instance.OwnerOf(nil, TokenID)
 	if err != nil {
+		// TODO:
+		// Handle error
+		// 2021/10/15 22:37:26 execution reverted: ERC721: owner query for nonexistent token
+		// 2021/10/15 22:37:26 ownerOf: 0x0000000000000000000000000000000000000000
 		log.Println(err)
+		return nft
 	}
 	log.Println("ownerOf:", ownerOf)
 	nft.Owner = ownerOf
