@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/JoshVarga/svgparser"
 	"github.com/davidbyttow/govips/v2/vips"
 	n "github.com/ubiq/bishop-discord/contracts"
 	"github.com/ubiq/go-ubiq/v5/common"
@@ -52,7 +53,6 @@ func HandleNception(RpcURL string, TokenID *big.Int) NFT {
 		return nft
 	}
 	nft.Owner = ownerOf
-	// Attributes
 
 	// Picture
 	tokenURIbase64, err := instance.TokenURI(nil, TokenID)
@@ -61,6 +61,16 @@ func HandleNception(RpcURL string, TokenID *big.Int) NFT {
 	}
 	nCeptionURI := decodeNceptionTokenURIbase64(tokenURIbase64)
 	nft.Picture = svgToImageLibvips(nCeptionURI.Image)
+
+	// Attributes
+	reader := strings.NewReader(nCeptionURI.Image)
+	e, _ := svgparser.Parse(reader, false)
+	sequence := []string{e.Children[2].Content, e.Children[3].Content, e.Children[4].Content, e.Children[5].Content, e.Children[6].Content, e.Children[7].Content, e.Children[8].Content, e.Children[9].Content}
+	sequenceAttribute := strings.Join(sequence[:], ", ")
+	attributes := make(map[string]string)
+	attributes["Owner"] = ownerOf.String()
+	attributes["sequence"] = sequenceAttribute
+	nft.Attributes = attributes
 
 	return nft
 }

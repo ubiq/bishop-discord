@@ -3,6 +3,7 @@ module github.com/ubiq/bishop-discord
 go 1.17
 
 require (
+	github.com/JoshVarga/svgparser v0.0.0-20200804023048-5eaba627a7d1
 	github.com/bwmarrin/discordgo v0.23.3-0.20211010150959-f0b7e81468f7
 	github.com/davidbyttow/govips/v2 v2.7.0
 )

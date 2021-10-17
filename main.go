@@ -59,10 +59,13 @@ var (
 				msgformat = fmt.Sprintf("Invalid Token ID: %d\n", tokenID)
 			} else {
 				nCeptionNft = nft.HandleNception(*RpcURL, tokenID)
-				msgformat = fmt.Sprintf("Owner: %s\n", nCeptionNft.Owner)
 				if nCeptionNft.Owner.Hex() == "0x0000000000000000000000000000000000000000" {
 					msgformat = "Unclaimed\n"
 				}
+			}
+			var fields []*discordgo.MessageEmbedField
+			for key, element := range nCeptionNft.Attributes {
+				fields = append(fields, &discordgo.MessageEmbedField{Name: key, Value: element})
 			}
 			// TODO: Owner as a Field and add Fields for attributes
 			msgembed := discordgo.MessageEmbed{
@@ -70,6 +73,7 @@ var (
 				URL:         "https://nception.ubiqsmart.com",
 				Color:       170,
 				Description: msgformat,
+				Fields:      fields,
 				Image: &discordgo.MessageEmbedImage{
 					URL: "attachment://output.png",
 				},
