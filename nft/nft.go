@@ -51,7 +51,6 @@ func HandleNception(RpcURL string, TokenID *big.Int) NFT {
 		log.Println(err)
 		return nft
 	}
-	log.Println("ownerOf:", ownerOf)
 	nft.Owner = ownerOf
 	// Attributes
 
@@ -60,9 +59,7 @@ func HandleNception(RpcURL string, TokenID *big.Int) NFT {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println("tokenURI:", tokenURIbase64)
 	nCeptionURI := decodeNceptionTokenURIbase64(tokenURIbase64)
-	// nft.Picture needs to be in a format which can be displayed by Discord
 	nft.Picture = svgToImageLibvips(nCeptionURI.Image)
 
 	return nft

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -67,11 +68,22 @@ var (
 					msgformat = fmt.Sprintf("nCeption NFT\nToken ID: %d\nUnclaimed\n", tokenID)
 				}
 			}
+			msgembed := discordgo.MessageEmbed{
+				Image: &discordgo.MessageEmbedImage{
+					URL: "attachment://output.png",
+				},
+			}
+			attachment := discordgo.File{
+				Name:        "output.png",
+				ContentType: "image/png",
+				Reader:      bytes.NewReader(nCeptionNft.Picture),
+			}
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				// Ignore type for now, we'll discuss them in "responses" part
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: msgformat,
+					Embeds:  []*discordgo.MessageEmbed{&msgembed},
+					Files:   []*discordgo.File{&attachment},
 				},
 			})
 		},
