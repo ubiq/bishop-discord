@@ -2,7 +2,10 @@ module github.com/ubiq/bishop-discord
 
 go 1.17
 
-require github.com/bwmarrin/discordgo v0.23.3-0.20211010150959-f0b7e81468f7
+require (
+	github.com/bwmarrin/discordgo v0.23.3-0.20211010150959-f0b7e81468f7
+	github.com/davidbyttow/govips/v2 v2.7.0
+)
 
 require (
 	github.com/gorilla/websocket v1.4.2 // indirect
@@ -23,11 +26,9 @@ require (
 	github.com/qri-io/jsonschema v0.2.0 // indirect
 	github.com/rjeczalik/notify v0.9.1 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
-	github.com/srwiley/oksvg v0.0.0-20210519022825-9fc0c575d5fe // indirect
-	github.com/srwiley/rasterx v0.0.0-20210519020934-456a8d69b780 // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
-	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
+	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5 // indirect
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
