@@ -1,8 +1,12 @@
 package nft
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"image"
+	"image/png"
 	"log"
 	"math/big"
 	"strings"
@@ -10,6 +14,10 @@ import (
 	n "github.com/ubiq/bishop-discord/contracts"
 	"github.com/ubiq/go-ubiq/v5/common"
 	"github.com/ubiq/go-ubiq/v5/ethclient"
+
+	// SVG support
+	"github.com/srwiley/oksvg"
+	"github.com/srwiley/rasterx"
 )
 
 type NFT struct {
@@ -62,7 +70,8 @@ func HandleNception(RpcURL string, TokenID *big.Int) NFT {
 	log.Println("tokenURI:", tokenURIbase64)
 	nCeptionURI := decodeNceptionTokenURIbase64(tokenURIbase64)
 	// nft.Picture needs to be in a format which can be displayed by Discord
-	nft.Picture = nCeptionURI.Image
+	nft.Picture = svgToImage(nCeptionURI.Image)
+	fmt.Println(nft.Picture)
 
 	return nft
 }
@@ -78,4 +87,29 @@ func decodeNceptionTokenURIbase64(tokenURIbase64 string) NceptionURI {
 	token.Image = string(tokenImage)
 
 	return token
+}
+
+func svgToImage(svgImage string) string {
+	// Modified from https://stackoverflow.com/a/63227777
+	var encodedPNG bytes.Buffer
+
+	// Rasterize the SVG:
+	icon, err := oksvg.ReadIconStream(strings.NewReader(svgImage))
+	if err != nil {
+		log.Println("oksvg.ReadIconStream:", err)
+		return ""
+	}
+	w := int(icon.ViewBox.W)
+	h := int(icon.ViewBox.H)
+	icon.SetTarget(0, 0, float64(w), float64(h))
+	rgba := image.NewRGBA(image.Rect(0, 0, w, h))
+	icon.Draw(rasterx.NewDasher(w, h, rasterx.NewScannerGV(w, h, rgba, rgba.Bounds())), 1)
+	// Write rasterized image as PNG:
+	err = png.Encode(&encodedPNG, rgba)
+	if err != nil {
+		log.Println("png.Encode:", err)
+		return ""
+	}
+
+	return encodedPNG.String()
 }
