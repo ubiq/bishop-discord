@@ -47,10 +47,6 @@ var (
 				},
 			},
 		},
-		{
-			Name:        "followups",
-			Description: "Followup messages",
-		},
 	}
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		"nception": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -60,15 +56,20 @@ var (
 			var msgformat string
 
 			if tokenID.Cmp(big.NewInt(1)) == -1 || tokenID.Cmp(big.NewInt(8888)) == 1 {
-				msgformat = fmt.Sprintf("nCeption NFT\nInvalid Token ID: %d\n", tokenID)
+				msgformat = fmt.Sprintf("Invalid Token ID: %d\n", tokenID)
 			} else {
 				nCeptionNft = nft.HandleNception(*RpcURL, tokenID)
-				msgformat = fmt.Sprintf("nCeption NFT\nToken ID: %d\nOwner: %s\n", tokenID, nCeptionNft.Owner)
+				msgformat = fmt.Sprintf("Owner: %s\n", nCeptionNft.Owner)
 				if nCeptionNft.Owner.Hex() == "0x0000000000000000000000000000000000000000" {
-					msgformat = fmt.Sprintf("nCeption NFT\nToken ID: %d\nUnclaimed\n", tokenID)
+					msgformat = "Unclaimed\n"
 				}
 			}
+			// TODO: Owner as a Field and add Fields for attributes
 			msgembed := discordgo.MessageEmbed{
+				Title:       fmt.Sprintf("nCeption NFT #%d", tokenID),
+				URL:         "https://nception.ubiqsmart.com",
+				Color:       170,
+				Description: msgformat,
 				Image: &discordgo.MessageEmbedImage{
 					URL: "attachment://output.png",
 				},
@@ -81,9 +82,8 @@ var (
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: msgformat,
-					Embeds:  []*discordgo.MessageEmbed{&msgembed},
-					Files:   []*discordgo.File{&attachment},
+					Embeds: []*discordgo.MessageEmbed{&msgembed},
+					Files:  []*discordgo.File{&attachment},
 				},
 			})
 		},
