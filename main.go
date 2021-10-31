@@ -35,6 +35,32 @@ func init() {
 var (
 	commands = []*discordgo.ApplicationCommand{
 		{
+			Name:        "chimp",
+			Description: "Retrieves the Chimp NFT based on the supplied Token ID",
+			Options: []*discordgo.ApplicationCommandOption{
+
+				{
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Name:        "tokenid",
+					Description: "Token ID",
+					Required:    true,
+				},
+			},
+		},
+		{
+			Name:        "gb89",
+			Description: "Retrieves the GB89 NFT based on the supplied Token ID",
+			Options: []*discordgo.ApplicationCommandOption{
+
+				{
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Name:        "tokenid",
+					Description: "Token ID",
+					Required:    true,
+				},
+			},
+		},
+		{
 			Name:        "nception",
 			Description: "Retrieves the nCeption NFT based on the supplied Token ID",
 			Options: []*discordgo.ApplicationCommandOption{
@@ -47,23 +73,104 @@ var (
 				},
 			},
 		},
-		{
-			Name:        "subterfuge",
-			Description: "Retrieves the Subterfuge NFT based on the supplied Token ID",
-			Options: []*discordgo.ApplicationCommandOption{
+		/*
+			{
+				Name:        "subterfuge",
+				Description: "Retrieves the Subterfuge NFT based on the supplied Token ID",
+				Options: []*discordgo.ApplicationCommandOption{
 
-				{
-					Type:        discordgo.ApplicationCommandOptionInteger,
-					Name:        "tokenid",
-					Description: "Token ID",
-					Required:    true,
+					{
+						Type:        discordgo.ApplicationCommandOptionInteger,
+						Name:        "tokenid",
+						Description: "Token ID",
+						Required:    true,
+					},
 				},
 			},
-		},
+		*/
 	}
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
+		"chimp": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			tokenID := big.NewInt(i.ApplicationCommandData().Options[0].IntValue())
+			var chimpNFT nft.NFT
+			var msgformat string
+
+			if tokenID.Cmp(big.NewInt(0)) == -1 {
+				msgformat = fmt.Sprintf("Invalid Token ID: %d\n", tokenID)
+			} else {
+				chimpNFT = nft.HandleChimp(*RpcURL, tokenID)
+				if chimpNFT.Owner.Hex() == "0x0000000000000000000000000000000000000000" {
+					msgformat = "Unclaimed\n"
+				}
+			}
+			var fields []*discordgo.MessageEmbedField
+			for key, element := range chimpNFT.Attributes {
+				fields = append(fields, &discordgo.MessageEmbedField{Name: key, Value: element})
+			}
+			msgembed := discordgo.MessageEmbed{
+				Title:       fmt.Sprintf("CHIMP NFT #%d", tokenID),
+				URL:         "https://chimp.ubiqsmart.com",
+				Color:       170,
+				Description: msgformat,
+				Fields:      fields,
+				Image: &discordgo.MessageEmbedImage{
+					URL: "attachment://output.png",
+				},
+			}
+			attachment := discordgo.File{
+				Name:        "output.png",
+				ContentType: "image/png",
+				Reader:      bytes.NewReader(chimpNFT.Picture),
+			}
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Embeds: []*discordgo.MessageEmbed{&msgembed},
+					Files:  []*discordgo.File{&attachment},
+				},
+			})
+		},
+		"gb89": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			tokenID := big.NewInt(i.ApplicationCommandData().Options[0].IntValue())
+			var gb89NFT nft.NFT
+			var msgformat string
+
+			if tokenID.Cmp(big.NewInt(0)) == -1 || tokenID.Cmp(big.NewInt(256)) == 1 {
+				msgformat = fmt.Sprintf("Invalid Token ID: %d\n", tokenID)
+			} else {
+				gb89NFT = nft.HandleGB89(*RpcURL, tokenID)
+				if gb89NFT.Owner.Hex() == "0x0000000000000000000000000000000000000000" {
+					msgformat = "Unclaimed\n"
+				}
+			}
+			var fields []*discordgo.MessageEmbedField
+			for key, element := range gb89NFT.Attributes {
+				fields = append(fields, &discordgo.MessageEmbedField{Name: key, Value: element})
+			}
+			msgembed := discordgo.MessageEmbed{
+				Title:       fmt.Sprintf("GB89 NFT #%d", tokenID),
+				URL:         "https://ubiq.github.io/gb89/",
+				Color:       170,
+				Description: msgformat,
+				Fields:      fields,
+				Image: &discordgo.MessageEmbedImage{
+					URL: "attachment://output.png",
+				},
+			}
+			attachment := discordgo.File{
+				Name:        "output.png",
+				ContentType: "image/png",
+				Reader:      bytes.NewReader(gb89NFT.Picture),
+			}
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Embeds: []*discordgo.MessageEmbed{&msgembed},
+					Files:  []*discordgo.File{&attachment},
+				},
+			})
+		},
 		"nception": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			// NFT handling
 			tokenID := big.NewInt(i.ApplicationCommandData().Options[0].IntValue())
 			var nCeptionNft nft.NFT
 			var msgformat string
@@ -104,7 +211,6 @@ var (
 			})
 		},
 		"subterfuge": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			// NFT handling
 			tokenID := big.NewInt(i.ApplicationCommandData().Options[0].IntValue())
 			var subterfugeNFT nft.NFT
 			var msgformat string

@@ -9,8 +9,10 @@ import (
 
 	"github.com/JoshVarga/svgparser"
 	"github.com/davidbyttow/govips/v2/vips"
-	n "github.com/ubiq/bishop-discord/contracts/n"
-	subterfuge "github.com/ubiq/bishop-discord/contracts/subterfuge"
+	"github.com/ubiq/bishop-discord/contracts/chimp"
+	"github.com/ubiq/bishop-discord/contracts/gb89"
+	"github.com/ubiq/bishop-discord/contracts/n"
+	"github.com/ubiq/bishop-discord/contracts/subterfuge"
 	"github.com/ubiq/go-ubiq/v5/common"
 	"github.com/ubiq/go-ubiq/v5/ethclient"
 )
@@ -26,6 +28,89 @@ type GenericSVGURI struct {
 	Description string              `json:"description"`
 	Image       string              `json:"image"`
 	Attributes  []map[string]string `json:"attributes"`
+}
+
+func HandleChimp(RpcURL string, TokenID *big.Int) NFT {
+	client, err := ethclient.Dial(RpcURL)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer client.Close()
+
+	// ERC721 address
+	contractAddress := common.HexToAddress("0x1e1628A35C82169F876F97C9CE5B6533895c2B22")
+	instance, err := chimp.NewChimpCaller(contractAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var nft NFT
+	ownerOf, err := instance.OwnerOf(nil, TokenID)
+	if err != nil {
+		log.Println(err)
+		return nft
+	}
+	nft.Owner = ownerOf
+
+	// Picture
+	tokenURIbase64, err := instance.TokenURI(nil, TokenID)
+	if err != nil {
+		log.Println(err)
+	}
+	chimpURI := decodeGenericSVGTokenURIbase64(tokenURIbase64)
+	nft.Picture = svgResizeToImageLibvips(chimpURI.Image)
+
+	// Attributes
+	attributes := make(map[string]string)
+	attributes["Owner"] = ownerOf.String()
+	nft.Attributes = attributes
+
+	return nft
+}
+
+func HandleGB89(RpcURL string, TokenID *big.Int) NFT {
+	client, err := ethclient.Dial(RpcURL)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer client.Close()
+
+	// ERC721 address
+	contractAddress := common.HexToAddress("0x0e2fbBA88C5E526f5160Af1b9Ad79a20130b2216")
+	instance, err := gb89.NewGb89Caller(contractAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var nft NFT
+	ownerOf, err := instance.OwnerOf(nil, TokenID)
+	if err != nil {
+		log.Println(err)
+		return nft
+	}
+	nft.Owner = ownerOf
+
+	// Picture
+	tokenURIbase64, err := instance.TokenURI(nil, TokenID)
+	if err != nil {
+		log.Println(err)
+	}
+	gb89URI := decodeGenericSVGTokenURIbase64(tokenURIbase64)
+	nft.Picture = svgToImageLibvips(gb89URI.Image)
+
+	// Attributes
+	attributes := make(map[string]string)
+	attributes["Owner"] = ownerOf.String()
+	for _, v := range gb89URI.Attributes {
+		for kA, vA := range v {
+			if kA == "trait_type" {
+				attributes[vA] = v["value"]
+			}
+		}
+	}
+	nft.Attributes = attributes
+
+	return nft
 }
 
 func HandleNception(RpcURL string, TokenID *big.Int) NFT {
@@ -142,6 +227,20 @@ func svgToImageLibvips(svgImage string) []byte {
 	}
 
 	encodedPNG := vips.NewDefaultPNGExportParams()
+	image1bytes, _, _ := image.Export(encodedPNG)
+	return image1bytes
+}
+
+func svgResizeToImageLibvips(svgImage string) []byte {
+	image, err := vips.NewImageFromReader(strings.NewReader(svgImage))
+	if err != nil {
+		log.Println("vips.NewImageFromReader:", err)
+		return nil
+	}
+
+	encodedPNG := vips.NewDefaultPNGExportParams()
+	// Resize takes a scale factor so hardcoded to 32 * 16px = 512
+	_ = image.Resize(32, vips.KernelNearest)
 	image1bytes, _, _ := image.Export(encodedPNG)
 	return image1bytes
 }
