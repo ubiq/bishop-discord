@@ -135,7 +135,7 @@ var (
 			var gb89NFT nft.NFT
 			var msgformat string
 
-			if tokenID.Cmp(big.NewInt(0)) == -1 || tokenID.Cmp(big.NewInt(256)) == 1 {
+			if tokenID.Cmp(big.NewInt(0)) == -1 || tokenID.Cmp(big.NewInt(255)) == 1 {
 				msgformat = fmt.Sprintf("Invalid Token ID: %d\n", tokenID)
 			} else {
 				gb89NFT = nft.HandleGB89(*RpcURL, tokenID)
