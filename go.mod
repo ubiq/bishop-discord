@@ -10,7 +10,7 @@ require (
 
 require (
 	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/ubiq/go-ubiq/v5 v5.2.1
+	github.com/ubiq/go-ubiq/v6 v6.0.0
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
 	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912 // indirect
 )
