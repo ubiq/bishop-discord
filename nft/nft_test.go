@@ -38,6 +38,12 @@ func Test_svgResizeToImageLibvips(t *testing.T) {
 	}
 }
 
+func Benchmark_svgToImageLibvips(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		svgToImageLibvips(chimp1_svg)
+	}
+}
+
 func Benchmark_svgResizeToImageLibvips(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		svgResizeToImageLibvips(chimp1_svg)
