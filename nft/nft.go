@@ -13,8 +13,8 @@ import (
 	"github.com/ubiq/bishop-discord/contracts/gb89"
 	"github.com/ubiq/bishop-discord/contracts/n"
 	"github.com/ubiq/bishop-discord/contracts/subterfuge"
-	"github.com/ubiq/go-ubiq/v6/common"
-	"github.com/ubiq/go-ubiq/v6/ethclient"
+	"github.com/ubiq/go-ubiq/v7/common"
+	"github.com/ubiq/go-ubiq/v7/ethclient"
 )
 
 type NFT struct {
