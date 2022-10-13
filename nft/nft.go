@@ -3,8 +3,11 @@ package nft
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"math/big"
+	"net/http"
 	"strings"
 
 	"github.com/JoshVarga/svgparser"
@@ -28,6 +31,35 @@ type GenericSVGURI struct {
 	Description string              `json:"description"`
 	Image       string              `json:"image"`
 	Attributes  []map[string]string `json:"attributes"`
+}
+
+type Collection struct {
+	Name            string
+	Description     string
+	ImageBaseURL    string
+	JawacampBaseURL string
+	CountMax        int
+	Attributes      bool
+	Revealed        bool
+}
+
+func (v *Collection) HandleCollection(TokenID int64) NFT {
+	var nft NFT
+
+	baseImageURL := v.ImageBaseURL
+	res, err := http.Get(fmt.Sprintf("%s/%d", baseImageURL, TokenID))
+	if err != nil {
+		log.Printf("http.Get -> %v", err)
+	}
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("io.ReadAll -> %v", err)
+	}
+	res.Body.Close()
+
+	nft.Picture = data
+
+	return nft
 }
 
 func HandleChimp(RpcURL string, TokenID *big.Int) NFT {
