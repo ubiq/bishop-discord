@@ -23,6 +23,7 @@ var (
 		Name:            "Cryptsters",
 		Description:     "Cryptsters is a collection of 888 randomly generated and stylistically curated NFTs that exist on the Ubiq blockchain. Cryptsters is licensed under CC0 - You can modify, distribute and perform the work, even for commercial purposes, all without asking permission.",
 		ImageBaseURL:    "https://cryptstersapi.ubiqsmart.com/image",
+		MetadataBaseURL: "https://cryptstersapi.ubiqsmart.com/cryptster",
 		JawacampBaseURL: "https://jawacamp.ubiqsmart.com/collections/0xc3d585288d35215754e970a23dd8de37a08e71b7",
 		CountMax:        888,
 		Attributes:      true,
@@ -165,11 +166,16 @@ var (
 				msgformat = fmt.Sprintf("Tweet with hash tag #%s - Image URL: %s", cryptsters.Name, imageURL)
 				iNFT = cryptsters.HandleCollection(tokenID)
 			}
+			var fields []*discordgo.MessageEmbedField
+			for key, element := range iNFT.Attributes {
+				fields = append(fields, &discordgo.MessageEmbedField{Name: key, Value: element})
+			}
 			msgembed := discordgo.MessageEmbed{
 				Title:       fmt.Sprintf("%s #%d", cryptsters.Name, tokenID),
 				URL:         fmt.Sprintf("%s/%d", cryptsters.JawacampBaseURL, tokenID),
 				Color:       170,
 				Description: msgformat,
+				Fields:      fields,
 				Image: &discordgo.MessageEmbedImage{
 					URL: "attachment://output.png",
 				},

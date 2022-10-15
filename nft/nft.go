@@ -33,10 +33,15 @@ type GenericSVGURI struct {
 	Attributes  []map[string]string `json:"attributes"`
 }
 
+type genericURI struct {
+	Attributes []map[string]string `json:"attributes"`
+}
+
 type Collection struct {
 	Name            string
 	Description     string
 	ImageBaseURL    string
+	MetadataBaseURL string
 	JawacampBaseURL string
 	CountMax        int
 	Attributes      bool
@@ -46,8 +51,7 @@ type Collection struct {
 func (v *Collection) HandleCollection(TokenID int64) NFT {
 	var nft NFT
 
-	baseImageURL := v.ImageBaseURL
-	res, err := http.Get(fmt.Sprintf("%s/%d", baseImageURL, TokenID))
+	res, err := http.Get(fmt.Sprintf("%s/%d", v.ImageBaseURL, TokenID))
 	if err != nil {
 		log.Printf("http.Get -> %v", err)
 	}
@@ -58,6 +62,30 @@ func (v *Collection) HandleCollection(TokenID int64) NFT {
 	res.Body.Close()
 
 	nft.Picture = data
+
+	// Attributes
+	res, err = http.Get(fmt.Sprintf("%s/%d", v.MetadataBaseURL, TokenID))
+	if err != nil {
+		log.Printf("http.Get -> %v", err)
+	}
+	data, err = io.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("io.ReadAll -> %v", err)
+	}
+	res.Body.Close()
+
+	token := genericURI{}
+	json.Unmarshal(data, &token)
+	attributes := make(map[string]string)
+
+	for _, v := range token.Attributes {
+		for kA, vA := range v {
+			if kA == "trait_type" {
+				attributes[vA] = v["value"]
+			}
+		}
+	}
+	nft.Attributes = attributes
 
 	return nft
 }
