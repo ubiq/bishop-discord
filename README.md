@@ -6,7 +6,7 @@ It utilizes modern [Discord Slash Commands](https://canary.discord.com/developer
 
 All of the token metadata is retrieved directly from the tokenURI in the smart contract.
 
-![Bishop from Aliens](https://www.denofgeek.com/wp-content/uploads/2016/06/bishop-main.jpg)
+![Bishop from Aliens](https://web.archive.org/web/20211110142351im_/https://www.denofgeek.com/wp-content/uploads/2016/06/bishop-main.jpg)
 
 Inspired by: https://github.com/lucid-eleven/nft-discord-bot
 
