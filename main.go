@@ -97,21 +97,6 @@ var (
 				},
 			},
 		},
-		/*
-			{
-				Name:        "subterfuge",
-				Description: "Retrieves the Subterfuge NFT based on the supplied Token ID",
-				Options: []*discordgo.ApplicationCommandOption{
-
-					{
-						Type:        discordgo.ApplicationCommandOptionInteger,
-						Name:        "tokenid",
-						Description: "Token ID",
-						Required:    true,
-					},
-				},
-			},
-		*/
 	}
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		"chimp": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -273,46 +258,6 @@ var (
 				},
 			})
 		},
-		"subterfuge": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			tokenID := big.NewInt(i.ApplicationCommandData().Options[0].IntValue())
-			var iNFT nft.NFT
-			var msgformat string
-
-			if tokenID.Cmp(big.NewInt(1)) == -1 || tokenID.Cmp(big.NewInt(8888)) == 1 {
-				msgformat = fmt.Sprintf("Invalid Token ID: %d\n", tokenID)
-			} else {
-				iNFT = nft.HandleSubterfuge(*RpcURL, tokenID)
-				if iNFT.Owner.Hex() == "0x0000000000000000000000000000000000000000" {
-					msgformat = "Unclaimed\n"
-				}
-			}
-			var fields []*discordgo.MessageEmbedField
-			for key, element := range iNFT.Attributes {
-				fields = append(fields, &discordgo.MessageEmbedField{Name: key, Value: element})
-			}
-			msgembed := discordgo.MessageEmbed{
-				Title:       fmt.Sprintf("Subterfuge NFT #%d", tokenID),
-				URL:         "https://subterfuge.ubiqsmart.com",
-				Color:       170,
-				Description: msgformat,
-				Fields:      fields,
-				Image: &discordgo.MessageEmbedImage{
-					URL: "attachment://output.png",
-				},
-			}
-			attachment := discordgo.File{
-				Name:        "output.png",
-				ContentType: "image/png",
-				Reader:      bytes.NewReader(iNFT.Picture),
-			}
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Embeds: []*discordgo.MessageEmbed{&msgembed},
-					Files:  []*discordgo.File{&attachment},
-				},
-			})
-		},
 	}
 )
 
@@ -342,7 +287,7 @@ func main() {
 
 	defer s.Close()
 
-	stop := make(chan os.Signal)
+	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
 	log.Println("Gracefully shutdowning")
