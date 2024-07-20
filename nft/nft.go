@@ -15,7 +15,6 @@ import (
 	"github.com/ubiq/bishop-discord/contracts/chimp"
 	"github.com/ubiq/bishop-discord/contracts/gb89"
 	"github.com/ubiq/bishop-discord/contracts/n"
-	"github.com/ubiq/bishop-discord/contracts/subterfuge"
 	"github.com/ubiq/go-ubiq/v7/common"
 	"github.com/ubiq/go-ubiq/v7/ethclient"
 )
@@ -217,51 +216,6 @@ func HandleNception(RpcURL string, TokenID *big.Int) NFT {
 	attributes := make(map[string]string)
 	attributes["Owner"] = ownerOf.String()
 	attributes["sequence"] = sequenceAttribute
-	nft.Attributes = attributes
-
-	return nft
-}
-
-func HandleSubterfuge(RpcURL string, TokenID *big.Int) NFT {
-	client, err := ethclient.Dial(RpcURL)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer client.Close()
-
-	// subterfuge ERC721 address
-	contractAddress := common.HexToAddress("0xb7F0e951745352a8D641d015DCcBf049F2570027")
-	instance, err := subterfuge.NewSubterfugeCaller(contractAddress, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var nft NFT
-	ownerOf, err := instance.OwnerOf(nil, TokenID)
-	if err != nil {
-		log.Println(err)
-		return nft
-	}
-	nft.Owner = ownerOf
-
-	// Picture
-	tokenURIbase64, err := instance.TokenURI(nil, TokenID)
-	if err != nil {
-		log.Println(err)
-	}
-	subterfugeURI := decodeGenericSVGTokenURIbase64(tokenURIbase64)
-	nft.Picture = svgToImageLibvips(subterfugeURI.Image)
-
-	// Attributes
-	attributes := make(map[string]string)
-	attributes["Owner"] = ownerOf.String()
-	for _, v := range subterfugeURI.Attributes {
-		for kA, vA := range v {
-			if kA == "trait_type" {
-				attributes[vA] = v["value"]
-			}
-		}
-	}
 	nft.Attributes = attributes
 
 	return nft
