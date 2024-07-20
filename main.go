@@ -290,5 +290,5 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
-	log.Println("Gracefully shutdowning")
+	log.Println("Gracefully shutting down")
 }
